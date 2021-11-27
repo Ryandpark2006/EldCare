@@ -24,4 +24,3 @@ while True:
         break
 
 
-  # make background black and make only lines pop up (white)

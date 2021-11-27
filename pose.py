@@ -50,8 +50,9 @@ def main():
         img = detector.findPose(img)
         lmList = detector.findPosition(img, draw=False)
         # print(lmList)
-        print(lmList[14]) #this gives you all the coordinates at point 14 given in mediapipe website
-        cv.circle(img, (lmList[14][1], lmList[14][2]), 15, (0, 0, 0), cv.FILLED)
+        # print(lmList[14]) #this gives you all the coordinates at point 14 given in mediapipe website
+        print(lmList) #this gives you all the coordinates at point 14 given in mediapipe website
+        # cv.circle(img, (lmList[14][1], lmList[14][2]), 15, (0, 0, 0), cv.FILLED)
 
         cTime = time.time()
         fps = 1/(cTime - pTime)
