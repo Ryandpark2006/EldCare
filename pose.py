@@ -3,50 +3,66 @@
 import cv2 as cv
 import mediapipe as mp
 import time
+import numpy as np
 
-def rescaleFrame(frame, scale = 0.75):
-    # images, videos, and live video
-    width = int(frame.shape[1] * scale)    # frame.shape[1] is basically width
-    height = int(frame.shape[0] * scale) # frame.shape[0] is basically height
-    dimensions = (width, height)
+class poseDetector():
 
-    return cv.resize(frame, dimensions, interpolation=cv.INTER_AREA)
+    def __init__(self, mode = False, upBody = False, smooth = True, detectionCon = 0.5, trackCon = 0.5):
 
-mpDraw = mp.solutions.drawing_utils
-mpPose = mp.solutions.pose
-pose = mpPose.Pose()
+        # self.mode = mode
+        # self.upBody = upBody
+        # self.smooth = smooth
+        # self.detectionCon = detectionCon
+        # self.trackCon = trackCon
 
+        self.mpDraw = mp.solutions.drawing_utils
+        self.mpPose = mp.solutions.pose
+        self.pose = self.mpPose.Pose()
 
-# cap = cv.VideoCapture('Notes/Advanced/PoseVideos/dancing.mp4')
-cap = cv.VideoCapture(0)
-pTime = 0
-cTime = 0
+    def findPose(self, img, draw = True):
+        imgRGB = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+        self.results = self.pose.process(imgRGB)
+        blank = np.zeros(img.shape, dtype='uint8')
+        if self.results.pose_landmarks:
+            if draw:
+                self.mpDraw.draw_landmarks(blank, self.results.pose_landmarks, self.mpPose.POSE_CONNECTIONS)
+        return blank
 
-while True:
-    success, img = cap.read()
-    # img = rescaleFrame(img, 0.2) #if you import videos 
-
-    imgRGB = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-    results = pose.process(imgRGB)
-    print(results.pose_landmarks)
-    if results.pose_landmarks:
-        mpDraw.draw_landmarks(img, results.pose_landmarks, mpPose.POSE_CONNECTIONS)
-        for id, lm in enumerate(results.pose_landmarks.landmark):
-            h, w, c = img.shape
-            print(id, lm)
-            cx, cy = int(lm.x * w), int(lm.y * h)
-            cv.circle(img, (cx, cy), 5, (255, 0, 0), cv.FILLED)
-
-
-    cTime = time.time()
-    fps = 1/(cTime - pTime)
-    pTime = cTime
-
-    cv.putText(img, str(int(fps)), (70,50), cv.FONT_HERSHEY_PLAIN, 3, (255,0,0), 3)
-
-    cv.imshow("Image", img) 
+    def findPosition(self, img, draw = True):
+        lmList = []
+        if self.results.pose_landmarks:
+            for id, lm in enumerate(self.results.pose_landmarks.landmark):
+                h, w, c = img.shape
+                # print(id, lm)
+                cx, cy = int(lm.x * w), int(lm.y * h)   #might be able to get z-values and visibility values if you want
+                lmList.append([id, cx, cy])
+                if draw:
+                    cv.circle(img, (cx, cy), 5, (255, 0, 0), cv.FILLED)
+        return lmList
     
-    if cv.waitKey(1) & 0xFF == ord('q'):
-        break
 
-  # make background black and make only lines pop up (white)
+def main():
+    cap = cv.VideoCapture(0)
+    pTime = 0
+    detector = poseDetector()
+    while True:
+        success, img = cap.read()
+        img = detector.findPose(img)
+        lmList = detector.findPosition(img, draw=False)
+        # print(lmList)
+        print(lmList[14]) #this gives you all the coordinates at point 14 given in mediapipe website
+        cv.circle(img, (lmList[14][1], lmList[14][2]), 15, (0, 0, 0), cv.FILLED)
+
+        cTime = time.time()
+        fps = 1/(cTime - pTime)
+        pTime = cTime
+
+        cv.putText(img, str(int(fps)), (70,50), cv.FONT_HERSHEY_PLAIN, 3, (255,0,0), 3)
+
+        cv.imshow("Image", img) 
+        
+        if cv.waitKey(1) & 0xFF == ord('q'):
+            break
+
+if __name__ == "__main__":
+    main()
