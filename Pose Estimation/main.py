@@ -3,25 +3,34 @@ import time
 import pose
 import numpy as np
 
-cap = cv.VideoCapture(0)
-pTime = 0
-detector = pose.poseDetector()
+cap = cv.VideoCapture('Pose Estimation/GoodMSRDailyActivity3D/Falling/IMG-2069.MOV.avi')
+detector = pose.poseDetector(mode=False, upBody=False, smooth=True, detectionCon=0.7, trackCon=0.6)
+
+#steps to downloading processed video
+
+frame_width = int(cap.get(3))
+frame_height = int(cap.get(4))    
+
+size = (frame_width, frame_height)
+
+result = cv.VideoWriter('filename.avi', cv.VideoWriter_fourcc(*'MJPG'), 10, size)    #make a counter for later so that it changes the file name when you use a while loop to process all the videos
+
 while True:
     success, img = cap.read()
+    if not success:
+        break
     img = detector.findPose(img)
     lmList = detector.findPosition(img, draw=False)
     # print(lmList)
-    print(lmList[14]) #this gives you all the coordinates at point 14 given in mediapipe website   //make something for if the point doesn't exist
-    cv.circle(img, (lmList[14][1], lmList[14][2]), 15, (0, 0, 255), cv.FILLED)
-    cTime = time.time()
-    fps = 1/(cTime - pTime)
-    pTime = cTime
+    print(lmList) #this gives you all the coordinates at point 14 given in mediapipe website   //make something for if the point doesn't exist
 
-    img =  cv.flip(img, 1)
-    cv.putText(img, str(int(fps)), (70,50), cv.FONT_HERSHEY_PLAIN, 3, (255,255,255), 3)
+    result.write(img) 
     cv.imshow("Image", img) 
     
     if cv.waitKey(1) & 0xFF == ord('q'):
         break
 
+result.release()
+cap.release()
+cv.destroyAllWindows()
 
