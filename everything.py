@@ -43,7 +43,7 @@ class poseDetector():
     
 
 def main():
-    cap = cv.VideoCapture('/Users/ajaykhanna/Downloads/Walking33.avi')
+    cap = cv.VideoCapture(0)
     pTime = 0
     detector = poseDetector()
     model = load_model('/Users/ajaykhanna/Downloads/final.h5')
@@ -93,10 +93,10 @@ def main():
             prediction = model.predict(arr)
             classID = np.argmax(prediction)
             className = classNames[classID]
-            print(className)
+            #print(className)
     # show the prediction on the frame
             #cv.putText(img, str(className), (10, 50), cv.FONT_HERSHEY_PLAIN, 1, (255,0,0), 1)
-            print("hi")
+            #print("hi")
             #cv.putText(img, str(int(prediction)), (30,50), cv.FONT_HERSHEY_PLAIN, 3, (255,0,0), 3)
             #cv.putText(img, str(className), (10,50), cv.FONT_HERSHEY_PLAIN, 3, (255,0,0), 3)
             x += 1
